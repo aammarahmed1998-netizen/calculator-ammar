@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أوج | الحاسبة العلمية المتقدمة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060a12;--card:#0d1524;--card2:#111b2d;--card3:#16223a;--border:rgba(148,163,184,.12);--text:#e6edf7;--soft:#94a3b8;--mute:#64748b;--accent:#22d3ee;--accent2:#f472b6;--accent3:#a78bfa;--glow:rgba(34,211,238,.35);--success:#34d399;--danger:#f87171;--warning:#fbbf24;--radius:14px}
+[data-theme="light"]{--bg:#eef3fb;--card:#fff;--card2:#f6f9ff;--card3:#eef3fc;--border:rgba(15,23,42,.09);--text:#0f172a;--soft:#475569;--mute:#94a3b8;--accent:#0ea5e9;--accent2:#db2777;--accent3:#7c3aed;--glow:rgba(14,165,233,.22)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased;transition:background .35s,color .35s;min-height:100vh}
+.app{max-width:1360px;margin:0 auto;padding:20px clamp(14px,3vw,32px) 40px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0 22px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:1.9rem;font-weight:800;color:#0b1120;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 24px -8px var(--glow)}
+.brand h1{font-size:1.55rem;font-weight:800;background:linear-gradient(120deg,var(--text),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.brand p{font-size:.82rem;color:var(--soft)}
+.actions{display:flex;gap:10px}
+.pill,.icon{border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;border-radius:999px;height:42px;font-family:inherit;transition:all .22s}
+.pill{padding:0 18px;display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:.85rem;letter-spacing:.06em}
+.icon{width:42px;display:grid;place-items:center;font-size:1.1rem}
+.pill:hover,.icon:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}50%{box-shadow:0 0 0 6px rgba(52,211,153,0)}}
+.tabs{display:flex;gap:8px;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow-x:auto;margin-bottom:22px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:120px;border:none;background:transparent;color:var(--soft);padding:11px 16px;border-radius:13px;cursor:pointer;font-family:inherit;font-size:.92rem;font-weight:700;white-space:nowrap;transition:all .24s}
+.tab:hover{color:var(--text);background:var(--card2)}
+.tab.active{color:#0b1120;background:linear-gradient(135deg,var(--accent),var(--accent3));box-shadow:0 6px 18px -6px var(--glow)}
+.panel{display:none;animation:fade .4s}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px}
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr);gap:20px;align-items:start}
+@media(max-width:980px){.layout{grid-template-columns:1fr}}
+.calc{padding:18px;display:flex;flex-direction:column;gap:14px}
+.display{background:linear-gradient(160deg,rgba(34,211,238,.08),rgba(244,114,182,.04) 60%,transparent);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-height:132px}
+.meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.badges{display:flex;gap:6px}
+.badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--card3);color:var(--soft);border:1px solid var(--border);letter-spacing:.05em}
+.badge.live{background:rgba(52,211,153,.12);color:var(--success);border-color:rgba(52,211,153,.35)}
+.badge.mem{background:rgba(251,191,36,.12);color:var(--warning);border-color:rgba(251,191,36,.35)}
+.copy{border:none;background:transparent;color:var(--mute);cursor:pointer;padding:6px;border-radius:8px;font-size:1rem;transition:all .2s}
+.copy:hover{color:var(--accent);background:var(--card2)}
+.expr{background:transparent;border:none;outline:none;font-family:'Cairo',monospace;font-size:1.02rem;color:var(--soft);width:100%;padding:4px 0;text-align:right}
+.expr::placeholder{color:var(--mute)}
+.result{font-size:clamp(1.9rem,4vw,2.6rem);font-weight:800;color:var(--text);text-align:right;min-height:2.6rem;line-height:1.15;overflow-x:auto;scrollbar-width:none;transition:color .2s}
+.result::-webkit-scrollbar{display:none}
+.result.error{color:var(--danger);font-size:1.4rem}
+.sub{font-size:.85rem;color:var(--mute);text-align:right;min-height:1rem;font-family:'Cairo',monospace}
+.memrow{display:grid;grid-template-columns:repeat(5,1fr) minmax(70px,auto);gap:6px;align-items:center}
+.mem{padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--soft);font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .18s}
+.mem:hover{color:var(--accent);border-color:var(--accent)}
+.memval{font-family:'Cairo',monospace;font-size:.78rem;color:var(--mute);text-align:center;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.keypad{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.key{aspect-ratio:1.15/1;border:1px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text);font-family:inherit;font-size:clamp(.85rem,1.6vw,1rem);font-weight:700;cursor:pointer;transition:all .15s;display:grid;place-items:center;padding:4px;user-select:none}
+.key:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);box-shadow:0 6px 14px -8px var(--glow)}
+.key:active{transform:scale(.96)}
+.fn{background:var(--card3);color:var(--soft);font-size:.82rem}
+.const{color:var(--accent3)}
+.num{background:var(--card3);font-size:clamp(1rem,2vw,1.15rem);font-weight:800}
+.op{color:var(--accent);font-size:1.15rem}
+.clear{color:var(--danger);background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.22)}
+.eq{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#0b1120;border:none;font-size:1.3rem}
+.eq:hover{color:#0b1120;filter:brightness(1.12)}
+.second{background:var(--card3);color:var(--accent2);font-size:.85rem}
+.side{display:flex;flex-direction:column;gap:18px}
+.hist,.consts{padding:16px}
+.chead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.chead h2{font-size:1rem;font-weight:700}
+.tbtn{border:none;background:transparent;color:var(--accent);font-family:inherit;font-size:.8rem;cursor:pointer;padding:4px 10px;border-radius:8px}
+.tbtn:hover{background:var(--card2)}
+.chip{font-size:.72rem;padding:3px 10px;border-radius:999px;background:var(--card2);color:var(--soft);border:1px solid var(--border);font-weight:600}
+.hlist{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
+.empty{text-align:center;color:var(--mute);font-size:.85rem;padding:24px 8px}
+.hitem{padding:10px 12px;border-radius:10px;background:var(--card2);border:1px solid transparent;cursor:pointer;transition:all .18s;text-align:left;direction:ltr;font-family:'Cairo',monospace}
+.hitem:hover{border-color:var(--accent);transform:translateX(-3px)}
+.hitem .he{color:var(--soft);font-size:.82rem;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hitem .hr{color:var(--text);font-size:1rem;font-weight:700}
+.search{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.search:focus-within{border-color:var(--accent)}
+.search input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:inherit;font-size:.85rem}
+.search input::placeholder{color:var(--mute)}
+.clist{max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;scrollbar-width:thin}
+.citem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background .18s;border:1px solid transparent}
+.citem:hover{background:var(--card2);border-color:var(--border)}
+.csym{font-size:1rem;font-weight:800;color:var(--accent);min-width:36px;text-align:center;font-family:'Cairo',monospace}
+.cinfo{flex:1;min-width:0}
+.cname{font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cval{font-size:.72rem;color:var(--mute);font-family:'Cairo',monospace;direction:ltr;text-align:right}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.sec-head h2{font-size:1.5rem;font-weight:800}
+.sec-head p{color:var(--soft);font-size:.9rem}
+.gcard{padding:16px}
+.gtoolbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fnin{display:flex;flex-direction:column;gap:8px;flex:1;min-width:240px}
+.fnrow{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.fnrow:focus-within{border-color:var(--accent)}
+.fndot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.fnrow label{color:var(--soft);font-family:'Cairo',monospace;font-size:.9rem;flex-shrink:0}
+.fnrow input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Cairo',monospace;font-size:.9rem;min-width:0}
+.gact{display:flex;gap:6px;flex-wrap:wrap}
+.tool{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-family:inherit;font-weight:700;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;transition:all .18s}
+.tool:hover{border-color:var(--accent);color:var(--accent)}
+.tool.wide{width:auto;padding:0 14px;gap:6px;font-size:.8rem}
+.gerr{color:var(--danger);font-size:.82rem;min-height:0;padding:0;transition:all .2s}
+.gerr:not(:empty){padding:8px 12px;margin-bottom:8px;background:rgba(248,113,113,.08);border-radius:8px;border:1px solid rgba(248,113,113,.22)}
+.cwrap{position:relative;border-radius:var(--radius);overflow:hidden;background:var(--card2);border:1px solid var(--border);aspect-ratio:16/9;min-height:320px;cursor:crosshair}
+#gcanvas{display:block;width:100%;height:100%}
+.gbadge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:var(--accent);font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.08em;pointer-events:none}
+.gtip{position:absolute;padding:6px 10px;background:var(--card);border:1px solid var(--accent);border-radius:8px;font-size:.75rem;font-family:'Cairo',monospace;color:var(--text);direction:ltr;pointer-events:none;transform:translate(-50%,-130%);white-space:pre;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);z-index:5}
+.gfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;font-size:.8rem;color:var(--soft)}
+.glegend{display:flex;gap:14px;flex-wrap:wrap}
+.litem{display:inline-flex;align-items:center;gap:6px;font-family:'Cairo',monospace}
+.ldot{width:10px;height:10px;border-radius:50%}
+.grange{font-family:'Cairo',monospace;color:var(--mute)}
+.hints{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:14px;font-size:.78rem;color:var(--mute)}
+.hints span{padding:4px 10px;background:var(--card);border:1px solid var(--border);border-radius:999px}
+.ccard{padding:18px}
+.catchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.catchip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--card2);color:var(--soft);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s}
+.catchip.active{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#0b1120;border-color:transparent}
+.cgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;margin-bottom:16px}
+@media(max-width:700px){.cgrid{grid-template-columns:1fr}.swap{transform:rotate(90deg);justify-self:center}}
+.cfield label{display:block;font-size:.8rem;color:var(--soft);margin-bottom:6px;font-weight:600}
+.crow{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.crow:focus-within{border-color:var(--accent)}
+.crow input{flex:1;background:transparent;border:none;outline:none;padding:12px 14px;color:var(--text);font-family:'Cairo',monospace;font-size:1rem;min-width:0}
+.crow select{background:var(--card3);border:none;border-inline-start:1px solid var(--border);color:var(--text);padding:0 12px;font-family:inherit;font-size:.85rem;cursor:pointer;outline:none;max-width:140px}
+.result-row input{color:var(--accent);font-weight:700}
+.swap{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--accent);cursor:pointer;display:grid;place-items:center;font-size:1.2rem;transition:all .25s;margin-bottom:3px}
+.swap:hover{background:var(--accent);color:#0b1120;transform:rotate(180deg)}
+.cformula{padding:10px 14px;background:var(--card2);border-radius:10px;font-family:'Cairo',monospace;font-size:.85rem;color:var(--soft);text-align:center;margin-bottom:20px}
+.ahead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.ahead h3{font-size:1rem;font-weight:700}
+.ahead span{font-size:.78rem;color:var(--mute)}
+.aunits{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.urow{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card2);border:1px solid transparent;border-radius:10px;font-size:.85rem}
+.urow:hover{border-color:var(--border)}
+.uname{color:var(--soft)}
+.uval{font-family:'Cairo',monospace;color:var(--accent);font-weight:700;direction:ltr}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.scard{padding:16px;display:flex;flex-direction:column;gap:12px}
+.shead{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sicon{width:34px;height:34px;border-radius:10px;background:var(--card3);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:.9rem;font-family:'Cairo',monospace}
+.shead h3{font-size:.95rem;font-weight:700}
+.sinputs{display:flex;flex-direction:column;gap:8px}
+.mfield{display:flex;flex-direction:column;gap:5px;font-size:.78rem;color:var(--soft)}
+.mfield>span:first-child{font-weight:600}
+.iunit{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.iunit:focus-within{border-color:var(--accent)}
+.iunit input{flex:1;background:transparent;border:none;outline:none;padding:8px 10px;color:var(--text);font-family:'Cairo',monospace;font-size:.85rem;min-width:0}
+.iunit b{display:flex;align-items:center;padding:0 10px;background:var(--card3);color:var(--mute);font-size:.72rem;font-weight:600;border-inline-start:1px solid var(--border)}
+.msel{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;cursor:pointer}
+.sres{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px dashed var(--border)}
+.sr{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.82rem;padding:6px 10px;border-radius:8px;background:var(--card2)}
+.sr span{color:var(--soft)}
+.sr b{font-family:'Cairo',monospace;color:var(--text);font-size:.85rem;direction:ltr;text-align:right}
+.sr.acc{background:rgba(34,211,238,.08)}
+.sr.acc b{color:var(--accent)}
+.ttabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.ttabs::-webkit-scrollbar{display:none}
+.ttab{border:1px solid var(--border);background:var(--card);color:var(--soft);padding:9px 16px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:600;white-space:nowrap;transition:all .18s}
+.ttab:hover{color:var(--text);border-color:var(--border)}
+.ttab.active{background:var(--card2);color:var(--accent);border-color:var(--accent)}
+.tpanel{padding:20px;display:none}
+.tpanel.active{display:block}
+.thead{margin-bottom:16px}
+.thead h3{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.thead p{color:var(--soft);font-size:.82rem}
+.tform{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.frow{grid-template-columns:1fr}}
+.bfield{display:flex;flex-direction:column;gap:6px}
+.bfield>span{font-size:.8rem;color:var(--soft);font-weight:600}
+.bfield input,.bfield textarea,.bsel{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Cairo',monospace;font-size:.95rem;outline:none;transition:border-color .18s;width:100%}
+.bfield input:focus,.bfield textarea:focus,.bsel:focus{border-color:var(--accent)}
+.bfield textarea{resize:vertical;min-height:90px}
+.bsel{cursor:pointer;font-family:inherit}
+.pbtn{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#0b1120;border:none;padding:11px 22px;border-radius:10px;font-family:inherit;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;align-self:start}
+.pbtn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.tres{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.tres.two{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.tr{background:var(--card2);border-radius:10px;padding:10px 14px;border:1px solid var(--border)}
+.tr span{display:block;font-size:.75rem;color:var(--soft);margin-bottom:4px}
+.tr b{font-family:'Cairo',monospace;color:var(--text);font-size:1rem;direction:ltr;display:block;text-align:right}
+.tr.acc{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2)}
+.tr.acc b{color:var(--accent)}
+.note{font-size:.8rem;color:var(--mute);padding:10px 12px;background:var(--card2);border-radius:8px;min-height:0}
+.note:empty{display:none}
+.note.error{color:var(--danger);background:rgba(248,113,113,.08)}
+.note.success{color:var(--success);background:rgba(52,211,153,.08)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:14px}
+.sbox{background:var(--card2);border-radius:10px;padding:10px 12px;border:1px solid var(--border)}
+.sbox span{display:block;font-size:.72rem;color:var(--soft);margin-bottom:3px}
+.sbox b{font-family:'Cairo',monospace;color:var(--text);font-size:.95rem;direction:ltr;display:block;text-align:right}
+.sbox.acc{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2)}
+.sbox.acc b{color:var(--accent)}
+.cxgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:560px){.cxgrid{grid-template-columns:1fr}}
+.cxgroup{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--card2);border-radius:12px}
+.cxgroup h4{color:var(--accent);font-family:'Cairo',monospace;font-size:1rem;margin-bottom:4px}
+.bgrid{display:flex;flex-direction:column;gap:8px}
+.brow{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--card2);border-radius:10px;border:1px solid var(--border)}
+.btag{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:6px;background:var(--card3);color:var(--accent);letter-spacing:.08em;min-width:44px;text-align:center}
+.brow code{flex:1;font-family:'Cairo',monospace;color:var(--text);font-size:.9rem;direction:ltr;text-align:right;word-break:break-all}
+.mtoolbar{display:flex;gap:12px;align-items:end;margin-bottom:14px}
+.ifield{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--soft)}
+.mgrid{display:grid;grid-template-columns:repeat(var(--n,2),1fr);gap:8px;max-width:340px;margin-bottom:16px}
+.mgrid input{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Cairo',monospace;text-align:center;outline:none;font-size:.9rem}
+.mgrid input:focus{border-color:var(--accent)}
+.mres{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+.mcard{background:var(--card2);border-radius:10px;padding:12px;border:1px solid var(--border)}
+.mcard>span{display:block;font-size:.75rem;color:var(--soft);margin-bottom:8px}
+.mcard>b{font-family:'Cairo',monospace;color:var(--accent);font-size:1.1rem;direction:ltr;text-align:right;display:block}
+.mrender{display:inline-grid;grid-template-columns:repeat(var(--n,2),auto);gap:4px;font-family:'Cairo',monospace;font-size:.82rem;direction:ltr}
+.mrender span{padding:3px 8px;background:var(--card3);border-radius:5px;color:var(--text)}
+.footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--mute)}
+.toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,120%);background:var(--card);border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:999px;font-size:.85rem;font-weight:600;box-shadow:0 20px 40px -15px rgba(0,0,0,.6);z-index:1000;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap}
+.toast.show{transform:translate(-50%,0);opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+<div class="brand">
+<div class="logo">∑</div>
+<div><h1>أوج</h1><p>حاسبة علمية متقدمة</p></div>
+</div>
+<div class="actions">
+<button class="pill" id="angleBtn" title="وضع الزوايا"><span class="dot"></span><span id="angleLabel">DEG</span></button>
+<button class="icon" id="themeBtn" title="تبديل المظهر">🌙</button>
+</div>
+</header>
+
+<nav class="tabs">
+<button class="tab active" data-tab="calc">🧮 الحاسبة</button>
+<button class="tab" data-tab="graph">📈 الرسم البياني</button>
+<button class="tab" data-tab="convert">🔄 تحويل الوحدات</button>
+<button class="tab" data-tab="physics">⚛️ الفيزياء</button>
+<button class="tab" data-tab="tools">🛠️ أدوات متقدمة</button>
+</nav>
+
+<!-- الحاسبة -->
+<section class="panel active" id="panel-calc">
+<div class="layout">
+<div class="calc card">
+<div class="display">
+<div class="meta">
+<div class="badges">
+<span class="badge" id="angleBadge">DEG</span>
+<span class="badge mem" id="memBadge" hidden>M</span>
+<span class="badge live">حي</span>
+</div>
+<button class="copy" id="copyBtn" title="نسخ">📋</button>
+</div>
+<input class="expr" id="exprInput" type="text" inputmode="text" autocomplete="off" dir="ltr" placeholder="0">
+<div class="result" id="resultMain" dir="ltr">0</div>
+<div class="sub" id="resultSub" dir="ltr"></div>
+</div>
+<div class="memrow">
+<button class="mem" data-mem="MC">MC</button>
+<button class="mem" data-mem="MR">MR</button>
+<button class="mem" data-mem="M+">M+</button>
+<button class="mem" data-mem="M-">M−</button>
+<button class="mem" data-mem="MS">MS</button>
+<span class="memval" id="memVal" dir="ltr">M = 0</span>
+</div>
+<div class="keypad" id="keypad">
+<button class="key second" data-act="second">2nd</button>
+<button class="key fn" data-ins="sin(" data-alt="asin(" data-albl="sin⁻¹">sin</button>
+<button class="key fn" data-ins="cos(" data-alt="acos(" data-albl="cos⁻¹">cos</button>
+<button class="key fn" data-ins="tan(" data-alt="atan(" data-albl="tan⁻¹">tan</button>
+<button class="key fn" data-ins="ln(" data-alt="exp(" data-albl="eˣ">ln</button>
+<button class="key fn" data-ins="log(" data-alt="10^(" data-albl="10ˣ">log</button>
+<button class="key fn" data-ins="^2">x²</button>
+<button class="key fn" data-ins="^">xʸ</button>
+<button class="key fn" data-ins="sqrt(" data-alt="cbrt(" data-albl="∛">√</button>
+<button class="key fn" data-ins="cbrt(">∛</button>
+<button class="key fn" data-ins="1/(" data-alt="abs(" data-albl="|x|">1/x</button>
+<button class="key fn" data-ins="!" data-alt="ncr(" data-albl="nCr">n!</button>
+<button class="key fn" data-ins="(">(</button>
+<button class="key fn" data-ins=")">)</button>
+<button class="key const" data-ins="π">π</button>
+<button class="key const" data-ins="e">e</button>
+<button class="key fn" data-ins="%">%</button>
+<button class="key fn" data-act="back" title="حذف">⌫</button>
+<button class="key num" data-ins="7">7</button>
+<button class="key num" data-ins="8">8</button>
+<button class="key num" data-ins="9">9</button>
+<button class="key op" data-ins="÷">÷</button>
+<button class="key clear" data-act="clear">C</button>
+<button class="key fn" data-ins="e">EXP</button>
+<button class="key num" data-ins="4">4</button>
+<button class="key num" data-ins="5">5</button>
+<button class="key num" data-ins="6">6</button>
+<button class="key op" data-ins="×">×</button>
+<button class="key fn" data-ins="mod(">mod</button>
+<button class="key fn" data-ins=",">,</button>
+<button class="key num" data-ins="1">1</button>
+<button class="key num" data-ins="2">2</button>
+<button class="key num" data-ins="3">3</button>
+<button class="key op" data-ins="−">−</button>
+<button class="key fn" data-act="ans">Ans</button>
+<button class="key fn" data-act="neg">±</button>
+<button class="key num" data-ins="0">0</button>
+<button class="key num" data-ins=".">.</button>
+<button class="key fn" data-ins="abs(">|x|</button>
+<button class="key op" data-ins="+">+</button>
+<button class="key eq" data-act="equals" style="grid-column:span 2">=</button>
+</div>
+</div>
+<aside class="side">
+<section class="card hist">
+<div class="chead"><h2>السجل</h2><button class="tbtn" id="clearHist">مسح</button></div>
+<div class="hlist" id="histList"></div>
+</section>
+<section class="card consts">
+<div class="chead"><h2>مكتبة الثوابت</h2><span class="chip">فيزياء + رياضيات</span></div>
+<div class="search"><span>🔍</span><input type="search" id="constSearch" placeholder="ابحث عن ثابت…"></div>
+<div class="clist" id="constList"></div>
+</section>
+</aside>
+</div>
+</section>
+
+<!-- الرسم البياني -->
+<section class="panel" id="panel-graph">
+<div class="sec-head">
+<div><h2>الرسم البياني</h2><p>ارسم الدوال، قرّب، حرّك بالراديان.</p></div>
+<span class="chip">تفاعلي</span>
+</div>
+<div class="gcard card">
+<div class="gtoolbar">
+<div class="fnin">
+<div class="fnrow"><span class="fndot" style="background:#22d3ee;box-shadow:0 0 10px #22d3ee"></span><label>f(x) =</label><input type="text" id="fn1" value="sin(x)" dir="ltr"></div>
+<div class="fnrow"><span class="fndot" style="background:#f472b6;box-shadow:0 0 10px #f472b6"></span><label>g(x) =</label><input type="text" id="fn2" value="x^2/10" dir="ltr"></div>
+</div>
+<div class="gact">
+<button class="tool" id="gzi">+</button>
+<button class="tool" id="gzo">−</button>
+<button class="tool" id="gay">Y</button>
+<button class="tool" id="grst">↺</button>
+<button class="tool wide" id="gdl">⬇ تنزيل</button>
+</div>
+</div>
+<div class="gerr" id="gerr"></div>
+<div class="cwrap" id="cwrap">
+<canvas id="gcanvas"></canvas>
+<div class="gbadge">RAD</div>
+<div class="gtip" id="gtip" hidden></div>
+</div>
+<div class="gfoot">
+<div class="glegend" id="glegend"></div>
+<div class="grange" id="grange" dir="ltr"></div>
+</div>
+</div>
+<div class="hints"><span>عجلة الفأرة: تكبير</span><span>السحب: تحريك</span><span>مرّر المؤشر: قراءة</span></div>
+</section>
+
+<!-- تحويل الوحدات -->
+<section class="panel" id="panel-convert">
+<div class="sec-head">
+<div><h2>تحويل الوحدات</h2><p>أكثر من 100 وحدة في فئات متعددة.</p></div>
+<span class="chip">دقيق</span>
+</div>
+<div class="ccard card">
+<div class="catchips" id="catchips"></div>
+<div class="cgrid">
+<div class="cfield">
+<label>القيمة</label>
+<div class="crow"><input type="number" id="fromVal" value="1" step="any" dir="ltr"><select id="fromUnit" dir="ltr"></select></div>
+</div>
+<button class="swap" id="swapBtn">⇄</button>
+<div class="cfield">
+<label>النتيجة</label>
+<div class="crow result-row"><input type="text" id="toVal" readonly dir="ltr"><select id="toUnit" dir="ltr"></select></div>
+</div>
+</div>
+<div class="cformula" id="cformula" dir="ltr"></div>
+<div class="ahead"><h3>كل الوحدات</h3><span id="ahint"></span></div>
+<div class="aunits" id="aunits"></div>
+</div>
+</section>
+
+<!-- الفيزياء -->
+<section class="panel" id="panel-physics">
+<div class="sec-head">
+<div><h2>مختبر الفيزياء</h2><p>حاسبات فورية لأهم القوانين بوحدات SI.</p></div>
+<span class="chip">12 حاسبة</span>
+</div>
+<div class="pgrid" id="pgrid"></div>
+</section>
+
+<!-- الأدوات -->
+<section class="panel" id="panel-tools">
+<div class="sec-head">
+<div><h2>أدوات متقدمة</h2><p>تفاضل وتكامل، معادلات، إحصاء، أعداد مركبة، أنظمة عد، مصفوفات.</p></div>
+<span class="chip">6 أدوات</span>
+</div>
+<div class="ttabs" id="ttabs">
+<button class="ttab active" data-tool="calculus">التفاضل والتكامل</button>
+<button class="ttab" data-tool="equations">حل المعادلات</button>
+<button class="ttab" data-tool="stats">الإحصاء</button>
+<button class="ttab" data-tool="complex">الأعداد المركبة</button>
+<button class="ttab" data-tool="bases">أنظمة العد</button>
+<button class="ttab" data-tool="matrix">المصفوفات</button>
+</div>
+<div class="tpanel active card" data-panel="calculus">
+<div class="thead"><h3>المشتقة والتكامل المحدد</h3><p>حساب عددي دقيق. المثلثية بالراديان.</p></div>
+<div class="tform">
+<div class="bfield"><span>الدالة f(x)</span><input type="text" id="calcF" value="x^3 - 2x + 1" dir="ltr"></div>
+<div class="frow">
+<div class="bfield"><span>النقطة a</span><input type="number" id="calcA" value="1" step="any" dir="ltr"></div>
+<div class="bfield"><span>نهاية التكامل b</span><input type="number" id="calcB" value="3" step="any" dir="ltr"></div>
+</div>
+</div>
+<div class="tres">
+<div class="tr"><span>f(a)</span><b id="outFA">—</b></div>
+<div class="tr"><span>f′(a)</span><b id="outDeriv">—</b></div>
+<div class="tr acc"><span>∫ f(x) dx</span><b id="outIntegral">—</b></div>
+</div>
+<div class="note" id="calcNote"></div>
+</div>
+<div class="tpanel card" data-panel="equations">
+<div class="thead"><h3>حل المعادلات عدديًا</h3><p>نيوتن + بحث تلقائي.</p></div>
+<div class="tform">
+<div class="bfield"><span>المعادلة f(x) = 0</span><input type="text" id="eqF" value="x^2 - 4" dir="ltr"></div>
+<div class="frow">
+<div class="bfield"><span>القيمة الابتدائية x₀</span><input type="number" id="eqX0" value="1" step="any" dir="ltr"></div>
+<button class="pbtn" id="eqSolve">أوجد الجذر</button>
+</div>
+</div>
+<div class="tres">
+<div class="tr acc"><span>الجذر x</span><b id="outEqRoot">—</b></div>
+<div class="tr"><span>f عند الجذر</span><b id="outEqVal">—</b></div>
+</div>
+<div class="note" id="eqNote"></div>
+</div>
+<div class="tpanel card" data-panel="stats">
+<div class="thead"><h3>الإحصاء الوصفي</h3><p>أدخل الأرقام مفصولة بمسافات أو فواصل.</p></div>
+<div class="bfield"><span>مجموعة البيانات</span><textarea id="statsIn" rows="4" dir="ltr">12, 15, 11, 18, 22, 15, 9, 15</textarea></div>
+<div class="sgrid">
+<div class="sbox"><span>n</span><b id="sN">—</b></div>
+<div class="sbox"><span>المجموع</span><b id="sSum">—</b></div>
+<div class="sbox acc"><span>المتوسط</span><b id="sMean">—</b></div>
+<div class="sbox"><span>الوسيط</span><b id="sMed">—</b></div>
+<div class="sbox"><span>المنوال</span><b id="sMode">—</b></div>
+<div class="sbox"><span>التباين</span><b id="sVar">—</b></div>
+<div class="sbox"><span>الانحراف المعياري</span><b id="sStd">—</b></div>
+<div class="sbox"><span>أصغر</span><b id="sMin">—</b></div>
+<div class="sbox"><span>أكبر</span><b id="sMax">—</b></div>
+<div class="sbox"><span>المدى</span><b id="sRange">—</b></div>
+</div>
+</div>
+<div class="tpanel card" data-panel="complex">
+<div class="thead"><h3>الأعداد المركبة</h3><p>z₁ = a + bi، z₂ = c + di</p></div>
+<div class="cxgrid">
+<div class="cxgroup"><h4>z₁</h4>
+<div class="bfield"><span>a</span><input type="number" id="cxA" value="3" step="any" dir="ltr"></div>
+<div class="bfield"><span>b</span><input type="number" id="cxB" value="4" step="any" dir="ltr"></div>
+</div>
+<div class="cxgroup"><h4>z₂</h4>
+<div class="bfield"><span>c</span><input type="number" id="cxC" value="1" step="any" dir="ltr"></div>
+<div class="bfield"><span>d</span><input type="number" id="cxD" value="-2" step="any" dir="ltr"></div>
+</div>
+</div>
+<div class="tres two">
+<div class="tr"><span>z₁ + z₂</span><b id="cxSum">—</b></div>
+<div class="tr"><span>z₁ − z₂</span><b id="cxDiff">—</b></div>
+<div class="tr"><span>z₁ × z₂</span><b id="cxProd">—</b></div>
+<div class="tr"><span>z₁ ÷ z₂</span><b id="cxQuot">—</b></div>
+<div class="tr"><span>|z₁|</span><b id="cxMod">—</b></div>
+<div class="tr"><span>arg z₁</span><b id="cxArg">—</b></div>
+<div class="tr"><span>المرافق</span><b id="cxConj">—</b></div>
+<div class="tr"><span>الصيغة القطبية</span><b id="cxPolar">—</b></div>
+</div>
+</div>
+<div class="tpanel card" data-panel="bases">
+<div class="thead"><h3>تحويل أنظمة العد</h3><p>دقة غير محدودة للأعداد الصحيحة.</p></div>
+<div class="tform"><div class="frow">
+<div class="bfield"><span>العدد</span><input type="text" id="baseIn" value="255" dir="ltr"></div>
+<div class="bfield"><span>النظام</span>
+<select id="baseFrom" class="bsel">
+<option value="10">عشري</option>
+<option value="2">ثنائي</option>
+<option value="8">ثماني</option>
+<option value="16">ست عشري</option>
+</select>
+</div>
+</div></div>
+<div class="bgrid">
+<div class="brow"><span class="btag">DEC</span><code id="baseDec">255</code></div>
+<div class="brow"><span class="btag">BIN</span><code id="baseBin">11111111</code></div>
+<div class="brow"><span class="btag">OCT</span><code id="baseOct">377</code></div>
+<div class="brow"><span class="btag">HEX</span><code id="baseHex">FF</code></div>
+</div>
+<div class="note" id="baseNote"></div>
+</div>
+<div class="tpanel card" data-panel="matrix">
+<div class="thead"><h3>المصفوفات</h3><p>المحدد والمعكوس والمنقول.</p></div>
+<div class="mtoolbar">
+<div class="ifield"><span>الحجم</span>
+<select id="mSize" class="msel"><option value="2">2 × 2</option><option value="3">3 × 3</option></select>
+</div>
+<button class="pbtn" id="mCalc">احسب</button>
+</div>
+<div class="mgrid" id="mGrid" style="--n:2"></div>
+<div class="mres">
+<div class="mcard"><span>المحدد</span><b id="mDet">—</b></div>
+<div class="mcard"><span>المعكوس</span><div id="mInv">—</div></div>
+<div class="mcard"><span>المنقول</span><div id="mTrans">—</div></div>
+</div>
+<div class="note" id="mNote"></div>
+</div>
+</section>
+
+<footer class="footer">
+<span>أوج — صُنعت بعناية للرياضيات والفيزياء.</span>
+<span>يعمل دون إنترنت • السجل محفوظ محليًا</span>
+</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ============ محرك التعبيرات ============ */
+(function(){
+const C={pi:Math.PI,e:Math.E,phi:(1+Math.sqrt(5))/2,tau:Math.PI*2};
+let angleMode='DEG';
+function setAM(m){angleMode=m;}
+function toRad(v){if(angleMode==='DEG')return v*Math.PI/180;if(angleMode==='GRAD')return v*Math.PI/200;return v;}
+function fromRad(v){if(angleMode==='DEG')return v*180/Math.PI;if(angleMode==='GRAD')return v*200/Math.PI;return v;}
+function fact(n){if(n<0&&Number.isInteger(n))throw new Error('مضروب سالب');if(!Number.isFinite(n))throw new Error('غير معرّف');if(Number.isInteger(n)){if(n===0||n===1)return 1;if(n>170)return Infinity;let r=1;for(let i=2;i<=n;i++)r*=i;return r;}return gamma(n+1);}
+function gamma(z){const g=7;const cf=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];if(z<0.5)return Math.PI/(Math.sin(Math.PI*z)*gamma(1-z));z-=1;let x=cf[0];for(let i=1;i<g+2;i++)x+=cf[i]/(z+i);const t=z+g+0.5;return Math.sqrt(2*Math.PI)*Math.pow(t,z+0.5)*Math.exp(-t)*x;}
+function comb(n,r){if(!Number.isInteger(n)||!Number.isInteger(r))throw new Error('nCr يتطلب أعدادًا صحيحة');if(r<0||r>n)return 0;if(r>n-r)r=n-r;let res=1;for(let i=0;i<r;i++)res=res*(n-i)/(i+1);return Math.round(res);}
+function gcd(a,b){a=Math.abs(Math.round(a));b=Math.abs(Math.round(b));while(b){[a,b]=[b,a%b];}return a;}
+function tokenize(str){
+const tokens=[];let i=0;
+const src=str.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/π/g,'pi');
+while(i<src.length){
+const c=src[i];
+if(/\s/.test(c)){i++;continue;}
+if(/[0-9.]/.test(c)){
+let j=i;while(j<src.length&&/[0-9.]/.test(src[j]))j++;
+if(j<src.length&&(src[j]==='e'||src[j]==='E')){
+let k=j+1;if(k<src.length&&(src[k]==='+'||src[k]==='-'))k++;
+if(k<src.length&&/[0-9]/.test(src[k])){
+while(k<src.length&&/[0-9]/.test(src[k]))k++;
+const numStr=src.slice(i,k);const num=parseFloat(numStr);
+if(Number.isNaN(num))throw new Error('رقم غير صالح: '+numStr);
+tokens.push({type:'num',value:num});i=k;continue;}}
+const numStr=src.slice(i,j);const num=parseFloat(numStr);
+if(Number.isNaN(num))throw new Error('رقم غير صالح: '+numStr);
+tokens.push({type:'num',value:num});i=j;continue;}
+if(/[a-zA-Z_]/.test(c)){
+let j=i;while(j<src.length&&/[a-zA-Z0-9_]/.test(src[j]))j++;
+tokens.push({type:'id',value:src.slice(i,j).toLowerCase()});i=j;continue;}
+if('+-*/^%!(),'.includes(c)){tokens.push({type:'op',value:c});i++;continue;}
+throw new Error('رمز غير معروف: '+c);}
+return tokens;}
+function parse(tokens,ctx){
+let pos=0;
+function peek(){return tokens[pos];}
+function next(){return tokens[pos++];}
+function expect(v){const t=tokens[pos];if(!t||t.value!==v)throw new Error(`متوقع "${v}"`);pos++;return t;}
+function parseExpression(){let left=parseTerm();while(peek()&&(peek().value==='+'||peek().value==='-')){const op=next().value;const right=parseTerm();left=op==='+'?left+right:left-right;}return left;}
+function parseTerm(){
+let left=parseFactor();
+while(peek()&&(peek().value==='*'||peek().value==='/')){const op=next().value;const right=parseFactor();left=op==='*'?left*right:left/right;}
+while(peek()){const t=peek();if(t.type==='num'||t.type==='id'||t.value==='('){const right=parseFactor();left*=right;}else break;}
+return left;}
+function parseFactor(){
+if(peek()&&(peek().value==='-'||peek().value==='+')){const op=next().value;const o=parseFactor();return op==='-'?-o:o;}
+let base=parsePrimary();
+while(peek()&&(peek().value==='!'||peek().value==='%')){const op=next().value;if(op==='!')base=fact(base);else base=base/100;}
+if(peek()&&peek().value==='^'){next();const e=parseFactor();base=Math.pow(base,e);}
+return base;}
+function parsePrimary(){
+const t=peek();if(!t)throw new Error('تعبير غير مكتمل');
+if(t.type==='num'){next();return t.value;}
+if(t.type==='id'){
+const name=next().value;
+if(name==='x')return ctx&&ctx.x!==undefined?ctx.x:0;
+if(name==='ans')return ctx&&ctx.ans!==undefined?ctx.ans:0;
+if(name==='m'||name==='mem')return ctx&&ctx.mem!==undefined?ctx.mem:0;
+if(name in C)return C[name];
+const un={sin:v=>Math.sin(toRad(v)),cos:v=>Math.cos(toRad(v)),tan:v=>Math.tan(toRad(v)),asin:v=>fromRad(Math.asin(v)),acos:v=>fromRad(Math.acos(v)),atan:v=>fromRad(Math.atan(v)),sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,asinh:Math.asinh,acosh:Math.acosh,atanh:Math.atanh,ln:Math.log,log:Math.log10,log2:Math.log2,exp:Math.exp,sqrt:v=>{if(v<0)throw new Error('جذر سالب');return Math.sqrt(v);},cbrt:Math.cbrt,abs:Math.abs,floor:Math.floor,ceil:Math.ceil,round:Math.round,sign:Math.sign,fact:fact};
+if(un[name]){let arg;if(peek()&&peek().value==='('){next();arg=parseExpression();expect(')');}else{arg=parseFactor();}return un[name](arg);}
+if(name==='ncr'){expect('(');const n=parseExpression();expect(',');const r=parseExpression();expect(')');return comb(n,r);}
+if(name==='npr'){expect('(');const n=parseExpression();expect(',');const r=parseExpression();expect(')');return Math.round(fact(n)/fact(n-r));}
+if(name==='mod'){expect('(');const a=parseExpression();expect(',');const b=parseExpression();expect(')');return((a%b)+b)%b;}
+if(name==='gcd'){expect('(');const a=parseExpression();expect(',');const b=parseExpression();expect(')');return gcd(a,b);}
+throw new Error('دالة غير معروفة: '+name);}
+if(t.value==='('){next();const v=parseExpression();expect(')');return v;}
+throw new Error('رمز غير متوقع: '+t.value);}
+const r=parseExpression();
+if(pos<tokens.length)throw new Error('رمز إضافي');
+return r;}
+function evaluate(expr,ctx){if(!expr||!expr.trim())return 0;const tokens=tokenize(expr);if(tokens.length===0)return 0;return parse(tokens,ctx||{});}
+function formatNumber(n){
+if(Number.isNaN(n))return 'NaN';
+if(!Number.isFinite(n))return n>0?'∞':'−∞';
+if(n===0)return '0';
+const abs=Math.abs(n);
+if(abs>=1e13||abs<1e-7)return n.toExponential(8).replace(/\.?0+e/,'e').replace('e+','e');
+let s=parseFloat(n.toPrecision(12)).toString();
+if(s.includes('.'))s=s.replace(/\.?0+$/,'');
+return s;}
+window.OujParser={evaluate,formatNumber,fact,comb,gamma,setAM,toRad,fromRad};
+})();
+
+/* ============ التطبيق الرئيسي ============ */
+(function(){
+const P=window.OujParser;
+const $=id=>document.getElementById(id);
+const state={ans:0,memory:0,history:[],angleMode:'DEG',secondActive:false};
+const CONSTS=[
+{sym:'π',name:'باي',value:Math.PI,insert:'pi'},
+{sym:'e',name:'عدد أويلر',value:Math.E,insert:'e'},
+{sym:'φ',name:'النسبة الذهبية',value:(1+Math.sqrt(5))/2,insert:'(1+sqrt(5))/2'},
+{sym:'c',name:'سرعة الضوء',value:299792458,insert:'299792458'},
+{sym:'G',name:'ثابت الجاذبية',value:6.674e-11,insert:'6.674e-11'},
+{sym:'h',name:'ثابت بلانك',value:6.626e-34,insert:'6.626e-34'},
+{sym:'k',name:'بولتزمان',value:1.381e-23,insert:'1.381e-23'},
+{sym:'Nₐ',name:'أفوجادرو',value:6.022e23,insert:'6.022e23'},
+{sym:'g',name:'تسارع الجاذبية',value:9.80665,insert:'9.80665'},
+{sym:'R',name:'ثابت الغازات',value:8.314,insert:'8.314'},
+{sym:'mₑ',name:'كتلة الإلكترون',value:9.109e-31,insert:'9.109e-31'},
+{sym:'mₚ',name:'كتلة البروتون',value:1.673e-27,insert:'1.673e-27'},
+];
+try{const s=JSON.parse(localStorage.getItem('ouj')||'{}');
+if(s.ans!==undefined)state.ans=s.ans;
+if(s.memory!==undefined)state.memory=s.memory;
+if(s.history)state.history=s.history;
+if(s.angleMode)state.angleMode=s.angleMode;
+if(s.theme)document.documentElement.setAttribute('data-theme',s.theme);
+}catch(e){}
+function save(){try{localStorage.setItem('ouj',JSON.stringify({ans:state.ans,memory:state.memory,history:state.history.slice(0,50),angleMode:state.angleMode,theme:document.documentElement.getAttribute('data-theme')}));}catch(e){}}
+const toastEl=$('toast');let tt;
+function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),2000);}
+const expr=$('exprInput'),resultMain=$('resultMain'),resultSub=$('resultSub');
+P.setAM(state.angleMode);
+$('angleBadge').textContent=state.angleMode;
+$('angleLabel').textContent=state.angleMode;
+updateMem();
+function updatePreview(){
+const e=expr.value.trim();
+if(!e){resultMain.textContent='0';resultMain.classList.remove('error');resultSub.textContent='';return;}
+try{const v=P.evaluate(e,{ans:state.ans,mem:state.memory});
+resultMain.textContent=P.formatNumber(v);resultMain.classList.remove('error');
+resultSub.textContent=!/^-?\d*\.?\d+$/.test(e)?'= '+P.formatNumber(v):'';
+}catch(err){resultMain.textContent='خطأ';resultMain.classList.add('error');resultSub.textContent=err.message||'تعبير غير صالح';}}
+function insert(t){expr.value+=t;expr.focus();const l=expr.value.length;expr.setSelectionRange(l,l);updatePreview();}
+function back(){const s=expr.selectionStart,e=expr.selectionEnd;if(s!==e){expr.value=expr.value.slice(0,s)+expr.value.slice(e);expr.setSelectionRange(s,s);}else if(s>0){expr.value=expr.value.slice(0,s-1)+expr.value.slice(s);expr.setSelectionRange(s-1,s-1);}expr.focus();updatePreview();}
+function clearAll(){expr.value='';resultSub.textContent='';updatePreview();expr.focus();}
+function neg(){const v=expr.value;if(!v){insert('-');return;}if(v.startsWith('-'))expr.value=v.slice(1);else expr.value='-'+v;updatePreview();expr.focus();}
+function equals(){const e=expr.value.trim();if(!e)return;
+try{const v=P.evaluate(e,{ans:state.ans,mem:state.memory});state.ans=v;addHist(e,v);resultMain.textContent=P.formatNumber(v);resultSub.textContent='= '+P.formatNumber(v);resultMain.classList.remove('error');save();}
+catch(err){toast('خطأ: '+(err.message||'تعبير غير صالح'));}}
+function addHist(e,r){state.history.unshift({expr:e,result:r,time:Date.now()});if(state.history.length>100)state.history.length=100;renderHist();save();}
+function renderHist(){
+const list=$('histList');
+if(!state.history.length){list.innerHTML='<div class="empty">لا توجد حسابات بعد</div>';return;}
+list.innerHTML=state.history.map((h,i)=>`<div class="hitem" data-i="${i}"><div class="he">${esc(h.expr)}</div><div class="hr">= ${P.formatNumber(h.result)}</div></div>`).join('');
+list.querySelectorAll('.hitem').forEach(el=>el.addEventListener('click',()=>{const it=state.history[+el.dataset.i];expr.value=it.expr;updatePreview();expr.focus();}));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+$('clearHist').addEventListener('click',()=>{state.history=[];renderHist();save();toast('تم مسح السجل');});
+function updateMem(){$('memVal').textContent='M = '+P.formatNumber(state.memory);$('memBadge').hidden=state.memory===0;}
+function handleMem(a){try{const cur=expr.value.trim()?P.evaluate(expr.value,{ans:state.ans,mem:state.memory}):state.ans;
+switch(a){case'MC':state.memory=0;toast('مسح');break;case'MR':insert('mem');return;case'M+':state.memory+=cur;toast('M+');break;case'M-':state.memory-=cur;toast('M−');break;case'MS':state.memory=cur;toast('حفظ');break;}
+updateMem();save();}catch(e){toast('خطأ في الذاكرة');}}
+$('keypad').addEventListener('click',e=>{
+const btn=e.target.closest('button');if(!btn)return;
+if(btn.dataset.mem){handleMem(btn.dataset.mem);return;}
+const a=btn.dataset.act;
+if(a==='second'){toggle2();return;}
+if(a==='back'){back();return;}
+if(a==='clear'){clearAll();return;}
+if(a==='equals'){equals();return;}
+if(a==='ans'){insert('ans');return;}
+if(a==='neg'){neg();return;}
+const ins=btn.dataset.activeIns||btn.dataset.ins;
+if(ins!==undefined){insert(ins);if(state.secondActive)toggle2();}
+});
+function toggle2(){state.secondActive=!state.secondActive;
+document.querySelectorAll('.key[data-alt]').forEach(k=>{
+if(state.secondActive){if(!k.dataset.orig)k.dataset.orig=k.textContent;k.textContent=k.dataset.albl||k.textContent;k.dataset.activeIns=k.dataset.alt;}
+else{k.textContent=k.dataset.orig||k.textContent;k.dataset.activeIns='';}});}
+$('copyBtn').addEventListener('click',async()=>{const t=resultMain.textContent;if(!t||t==='خطأ')return;try{await navigator.clipboard.writeText(t);toast('تم النسخ');}catch{toast('تعذّر النسخ');}});
+const modes=['DEG','RAD','GRAD'];
+$('angleBtn').addEventListener('click',()=>{const i=modes.indexOf(state.angleMode);state.angleMode=modes[(i+1)%modes.length];P.setAM(state.angleMode);$('angleLabel').textContent=state.angleMode;$('angleBadge').textContent=state.angleMode;updatePreview();save();toast('الوضع: '+state.angleMode);});
+$('themeBtn').addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme');const n=c==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);$('themeBtn').textContent=n==='light'?'☀️':'🌙';save();document.dispatchEvent(new CustomEvent('themechange'));});
+if(document.documentElement.getAttribute('data-theme')==='light')$('themeBtn').textContent='☀️';
+function renderConsts(f=''){const q=f.trim().toLowerCase();
+const list=$('constList');
+const filt=CONSTS.filter(c=>!q||c.name.toLowerCase().includes(q)||c.sym.toLowerCase().includes(q)||c.insert.toLowerCase().includes(q));
+if(!filt.length){list.innerHTML='<div class="empty">لا نتائج</div>';return;}
+list.innerHTML=filt.map(c=>`<div class="citem" data-ins="${c.insert}"><div class="csym">${c.sym}</div><div class="cinfo"><div class="cname">${c.name}</div><div class="cval">${P.formatNumber(c.value)}</div></div></div>`).join('');
+list.querySelectorAll('.citem').forEach(el=>el.addEventListener('click',()=>insert(el.dataset.ins)));}
+$('constSearch').addEventListener('input',e=>renderConsts(e.target.value));
+renderConsts();
+expr.addEventListener('input',updatePreview);
+expr.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();equals();}else if(e.key==='Escape'){e.preventDefault();clearAll();}});
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t.dataset.tab));
+if(t.dataset.tab==='calc')setTimeout(()=>expr.focus(),50);
+document.dispatchEvent(new CustomEvent('tabchange',{detail:t.dataset.tab}));}));
+renderHist();updatePreview();expr.focus();
+window.OujApp={state,insert,toast,save};
+})();
+</script>
+
+<script>
+/* ============ الرسم البياني ============ */
+(function(){
+const P=window.OujParser;const $=id=>document.getElementById(id);
+const canvas=$('gcanvas');if(!canvas)return;const ctx=canvas.getContext('2d');
+const wrap=$('cwrap'),tip=$('gtip'),errEl=$('gerr'),legend=$('glegend'),rangeEl=$('grange');
+const fn1=$('fn1'),fn2=$('fn2');
+const view={xmin:-10,xmax:10,ymin:-6,ymax:6};
+let dpr=Math.max(1,window.devicePixelRatio||1),W=0,H=0;
+function isDark(){return document.documentElement.getAttribute('data-theme')!=='light';}
+function gc(){return isDark()?'rgba(148,163,184,.09)':'rgba(15,23,42,.08)';}
+function ac(){return isDark()?'rgba(148,163,184,.4)':'rgba(15,23,42,.4)';}
+function tc(){return isDark()?'#94a3b8':'#475569';}
+function resize(){const r=wrap.getBoundingClientRect();dpr=Math.max(1,window.devicePixelRatio||1);W=Math.max(1,Math.floor(r.width));H=Math.max(1,Math.floor(r.height));canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
+function xp(x){return((x-view.xmin)/(view.xmax-view.xmin))*W;}
+function yp(y){return H-((y-view.ymin)/(view.ymax-view.ymin))*H;}
+function pxX(p){return view.xmin+(p/W)*(view.xmax-view.xmin);}
+function pyY(p){return view.ymin+((H-p)/H)*(view.ymax-view.ymin);}
+function step(r,t=10){const ro=r/t;const m=Math.pow(10,Math.floor(Math.log10(ro)));const n=ro/m;let s;if(n<1.5)s=1;else if(n<3)s=2;else if(n<7)s=5;else s=10;return s*m;}
+function draw(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle=isDark()?'#0a1120':'#f6f9ff';ctx.fillRect(0,0,W,H);
+const sx=step(view.xmax-view.xmin),sy=step(view.ymax-view.ymin);
+ctx.strokeStyle=gc();ctx.lineWidth=1;ctx.beginPath();
+const stx=Math.ceil(view.xmin/sx)*sx;
+for(let x=stx;x<=view.xmax;x+=sx){const p=xp(x);ctx.moveTo(p,0);ctx.lineTo(p,H);}
+const sty=Math.ceil(view.ymin/sy)*sy;
+for(let y=sty;y<=view.ymax;y+=sy){const p=yp(y);ctx.moveTo(0,p);ctx.lineTo(W,p);}
+ctx.stroke();
+ctx.strokeStyle=ac();ctx.lineWidth=1.5;ctx.beginPath();
+const y0=yp(0),x0=xp(0);
+if(y0>=0&&y0<=H){ctx.moveTo(0,y0);ctx.lineTo(W,y0);}
+if(x0>=0&&x0<=W){ctx.moveTo(x0,0);ctx.lineTo(x0,H);}
+ctx.stroke();
+ctx.fillStyle=tc();ctx.font='11px Cairo,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+for(let x=stx;x<=view.xmax;x+=sx){if(Math.abs(x)<1e-9)continue;const px=xp(x);const py=Math.min(H-4,Math.max(4,y0+4));ctx.fillText(fmtT(x),px,py);}
+ctx.textAlign='right';ctx.textBaseline='middle';
+for(let y=sty;y<=view.ymax;y+=sy){if(Math.abs(y)<1e-9)continue;const py=yp(y);const px=Math.min(W-4,Math.max(4,x0-6));ctx.fillText(fmtT(y),px,py);}
+drawFn(fn1.value,'#22d3ee');drawFn(fn2.value,'#f472b6');
+rangeEl.textContent=`x: [${fmtT(view.xmin)}, ${fmtT(view.xmax)}]  y: [${fmtT(view.ymin)}, ${fmtT(view.ymax)}]`;
+legend.innerHTML=`<div class="litem"><span class="ldot" style="background:#22d3ee"></span>f(x) = ${esc(fn1.value)}</div><div class="litem"><span class="ldot" style="background:#f472b6"></span>g(x) = ${esc(fn2.value)}</div>`;}
+function fmtT(v){return String(Math.round(v*1e6)/1e6);}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function drawFn(expr,col){if(!expr||!expr.trim())return;
+ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
+let prevY=null,first=true;
+for(let p=0;p<=W;p+=1){const x=pxX(p);let y;
+try{y=P.evaluate(expr,{x});}catch{prevY=null;first=true;continue;}
+if(!Number.isFinite(y)){prevY=null;first=true;continue;}
+const py=yp(y);
+if(prevY!==null&&Math.abs(py-prevY)>H*1.5){first=true;}
+if(first){ctx.moveTo(p,py);first=false;}else ctx.lineTo(p,py);
+prevY=py;}
+ctx.stroke();}
+let dragging=false,dsx=0,dsy=0,dsv=null;
+canvas.addEventListener('pointerdown',e=>{dragging=true;dsx=e.clientX;dsy=e.clientY;dsv={...view};canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';});
+canvas.addEventListener('pointermove',e=>{
+if(dragging){const dx=e.clientX-dsx,dy=e.clientY-dsy;
+const rx=dsv.xmax-dsv.xmin,ry=dsv.ymax-dsv.ymin;
+const shx=(dx/W)*rx,shy=(dy/H)*ry;
+view.xmin=dsv.xmin-shx;view.xmax=dsv.xmax-shx;view.ymin=dsv.ymin+shy;view.ymax=dsv.ymax+shy;draw();}
+else{const r=canvas.getBoundingClientRect();const px=e.clientX-r.left,py=e.clientY-r.top;const x=pxX(px);
+let vals=[];
+for(const[expr,lbl] of[[fn1.value,'f'],[fn2.value,'g']]){try{const y=P.evaluate(expr,{x});if(Number.isFinite(y))vals.push(`${lbl}(${fmtT(x)}) = ${P.formatNumber(y)}`);}catch{}}
+if(vals.length){tip.textContent=vals.join('\\n');tip.style.left=px+'px';tip.style.top=py+'px';tip.hidden=false;}}
+});
+canvas.addEventListener('pointerup',()=>{dragging=false;canvas.style.cursor='crosshair';});
+canvas.addEventListener('pointerleave',()=>{tip.hidden=true;if(!dragging)canvas.style.cursor='crosshair';});
+canvas.addEventListener('wheel',e=>{e.preventDefault();
+const r=canvas.getBoundingClientRect();const px=e.clientX-r.left,py=e.clientY-r.top;
+const cx=pxX(px),cy=pyY(py);const f=e.deltaY>0?1.15:.87;
+view.xmin=cx+(view.xmin-cx)*f;view.xmax=cx+(view.xmax-cx)*f;
+view.ymin=cy+(view.ymin-cy)*f;view.ymax=cy+(view.ymax-cy)*f;draw();},{passive:false});
+$('gzi').addEventListener('click',()=>{const cx=(view.xmin+view.xmax)/2,cy=(view.ymin+view.ymax)/2;view.xmin=cx+(view.xmin-cx)*.75;view.xmax=cx+(view.xmax-cx)*.75;view.ymin=cy+(view.ymin-cy)*.75;view.ymax=cy+(view.ymax-cy)*.75;draw();});
+$('gzo').addEventListener('click',()=>{const cx=(view.xmin+view.xmax)/2,cy=(view.ymin+view.ymax)/2;view.xmin=cx+(view.xmin-cx)*1.33;view.xmax=cx+(view.xmax-cx)*1.33;view.ymin=cy+(view.ymin-cy)*1.33;view.ymax=cy+(view.ymax-cy)*1.33;draw();});
+$('grst').addEventListener('click',()=>{view.xmin=-10;view.xmax=10;view.ymin=-6;view.ymax=6;draw();});
+$('gay').addEventListener('click',()=>{let min=Infinity,max=-Infinity;
+for(const e of[fn1.value,fn2.value]){if(!e.trim())continue;
+for(let p=0;p<=W;p+=4){const x=pxX(p);try{const y=P.evaluate(e,{x});if(Number.isFinite(y)){if(y<min)min=y;if(y>max)max=y;}}catch{}}}
+if(!Number.isFinite(min)||!Number.isFinite(max)||min===max)return;
+const pad=(max-min)*.1||1;view.ymin=min-pad;view.ymax=max+pad;draw();});
+$('gdl').addEventListener('click',()=>{const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='ouj-graph.png';a.click();});
+function updErr(){errEl.textContent='';
+for(const f of[fn1,fn2]){const e=f.value.trim();if(!e)continue;try{P.evaluate(e,{x:1});}catch(err){errEl.textContent=`خطأ في ${f.id==='fn1'?'f':'g'}(x): ${err.message}`;break;}}draw();}
+fn1.addEventListener('input',updErr);fn2.addEventListener('input',updErr);
+window.addEventListener('resize',resize);
+document.addEventListener('tabchange',e=>{if(e.detail==='graph')setTimeout(resize,30);});
+document.addEventListener('themechange',()=>draw());
+setTimeout(resize,60);
+})();
+
+/* ============ تحويل الوحدات ============ */
+(function(){
+const P=window.OujParser;const $=id=>document.getElementById(id);
+const CATS={
+length:{name:'الطول',units:{m:{l:'متر',f:1},km:{l:'كم',f:1000},cm:{l:'سم',f:.01},mm:{l:'مم',f:.001},in:{l:'بوصة',f:.0254},ft:{l:'قدم',f:.3048},yd:{l:'ياردة',f:.9144},mi:{l:'ميل',f:1609.344},nmi:{l:'ميل بحري',f:1852},au:{l:'AU',f:1.496e11},ly:{l:'سنة ضوئية',f:9.461e15}}},
+mass:{name:'الكتلة',units:{kg:{l:'كغ',f:1},g:{l:'غ',f:.001},mg:{l:'مغ',f:1e-6},t:{l:'طن',f:1000},lb:{l:'باوند',f:.453592},oz:{l:'أونصة',f:.0283495}}},
+area:{name:'المساحة',units:{m2:{l:'م²',f:1},km2:{l:'كم²',f:1e6},cm2:{l:'سم²',f:1e-4},ha:{l:'هكتار',f:10000},acre:{l:'فدان',f:4046.86},ft2:{l:'قدم²',f:.092903}}},
+volume:{name:'الحجم',units:{m3:{l:'م³',f:1},L:{l:'لتر',f:.001},mL:{l:'مل',f:1e-6},gal:{l:'غالون',f:.00378541},qt:{l:'كوارت',f:.000946353},cup:{l:'كوب',f:.000236588}}},
+temperature:{name:'الحرارة',units:{C:{l:'°C',s:1},F:{l:'°F',s:1},K:{l:'K',s:1},R:{l:'°R',s:1}}},
+speed:{name:'السرعة',units:{ms:{l:'م/ث',f:1},kmh:{l:'كم/س',f:1/3.6},mph:{l:'ميل/س',f:.44704},kn:{l:'عقدة',f:.514444},c:{l:'سرعة الضوء',f:299792458}}},
+energy:{name:'الطاقة',units:{J:{l:'جول',f:1},kJ:{l:'كج',f:1000},cal:{l:'كالوري',f:4.184},kcal:{l:'ك.كالوري',f:4184},kWh:{l:'ك.و.س',f:3.6e6},eV:{l:'eV',f:1.602e-19}}},
+pressure:{name:'الضغط',units:{Pa:{l:'باسكال',f:1},kPa:{l:'ك.باسكال',f:1000},bar:{l:'بار',f:1e5},atm:{l:'ضغط جوي',f:101325},mmHg:{l:'mmHg',f:133.322},psi:{l:'psi',f:6894.76}}},
+time:{name:'الزمن',units:{s:{l:'ث',f:1},ms:{l:'م.ث',f:.001},min:{l:'دقيقة',f:60},h:{l:'ساعة',f:3600},d:{l:'يوم',f:86400},wk:{l:'أسبوع',f:604800},yr:{l:'سنة',f:31536000}}},
+angle:{name:'الزاوية',units:{deg:{l:'°',f:Math.PI/180},rad:{l:'rad',f:1},grad:{l:'grad',f:Math.PI/200},turn:{l:'دورة',f:Math.PI*2}}},
+data:{name:'البيانات',units:{B:{l:'بايت',f:1},KB:{l:'ك.بايت',f:1024},MB:{l:'م.بايت',f:1048576},GB:{l:'ج.بايت',f:1073741824},TB:{l:'ت.بايت',f:1099511627776},bit:{l:'بت',f:.125}}},
+force:{name:'القوة',units:{N:{l:'نيوتن',f:1},kN:{l:'ك.نيوتن',f:1000},dyn:{l:'داين',f:1e-5},kgf:{l:'كغ.قوة',f:9.80665},lbf:{l:'رطل.قوة',f:4.44822}}}
+};
+let cur='length';
+function renderChips(){$('catchips').innerHTML=Object.entries(CATS).map(([k,c])=>`<button class="catchip${k===cur?' active':''}" data-cat="${k}">${c.name}</button>`).join('');
+$('catchips').querySelectorAll('.catchip').forEach(el=>el.addEventListener('click',()=>{cur=el.dataset.cat;renderChips();renderUnits();conv();}));}
+function renderUnits(){const cat=CATS[cur];const opts=Object.entries(cat.units).map(([k,u])=>`<option value="${k}">${u.l}</option>`).join('');
+$('fromUnit').innerHTML=opts;$('toUnit').innerHTML=opts;
+const k=Object.keys(cat.units);$('fromUnit').value=k[0];$('toUnit').value=k[1]||k[0];conv();}
+function tempC(v,f,t){let c;switch(f){case'C':c=v;break;case'F':c=(v-32)*5/9;break;case'K':c=v-273.15;break;case'R':c=(v-491.67)*5/9;break;}switch(t){case'C':return c;case'F':return c*9/5+32;case'K':return c+273.15;case'R':return(c+273.15)*9/5;}}
+function conv(){const cat=CATS[cur];const f=$('fromUnit').value,t=$('toUnit').value,v=parseFloat($('fromVal').value);
+if(!Number.isFinite(v)){$('toVal').value='—';return;}
+let r=cur==='temperature'?tempC(v,f,t):(v*cat.units[f].f)/cat.units[t].f;
+$('toVal').value=P.formatNumber(r);
+if(cur==='temperature')$('cformula').textContent=`${v} ${f} = ${P.formatNumber(r)} ${t}`;
+else{const ratio=cat.units[f].f/cat.units[t].f;$('cformula').textContent=`1 ${f} = ${P.formatNumber(ratio)} ${t}  ⇒  ${v} × ${P.formatNumber(ratio)} = ${P.formatNumber(r)}`;}
+$('ahint').textContent=`من ${cat.units[f].l}`;
+$('aunits').innerHTML=Object.entries(cat.units).map(([k,u])=>{let vv=cur==='temperature'?tempC(v,f,k):(v*cat.units[f].f)/u.f;return`<div class="urow"><span class="uname">${u.l}</span><span class="uval">${P.formatNumber(vv)}</span></div>`;}).join('');}
+$('fromVal').addEventListener('input',conv);
+$('fromUnit').addEventListener('change',conv);
+$('toUnit').addEventListener('change',conv);
+$('swapBtn').addEventListener('click',()=>{const f=$('fromUnit').value;$('fromUnit').value=$('toUnit').value;$('toUnit').value=f;conv();});
+renderChips();renderUnits();
+})();
+
+/* ============ الفيزياء ============ */
+(function(){
+const P=window.OujParser;const $=id=>document.getElementById(id);
+const G=6.674e-11,C=299792458,g=9.80665;
+function n(id,d=0){const el=$(id);if(!el)return d;const v=parseFloat(el.value);return Number.isFinite(v)?v:d;}
+function f(x){return Number.isFinite(x)?P.formatNumber(x):'—';}
+const solvers=[
+{id:'pj',icon:'↗',title:'حركة المقذوفات',inputs:[{id:'pjV0',label:'السرعة الابتدائية v₀',unit:'m/s',val:20},{id:'pjAngle',label:'زاوية الإطلاق θ',unit:'°',val:45}],outputs:[{id:'outPjR',label:'المدى R'},{id:'outPjH',label:'أقصى ارتفاع H'},{id:'outPjT',label:'زمن التحليق T'},{id:'outPjVx',label:'المركبة الأفقية'}]},
+{id:'nw',icon:'F',title:'قانون نيوتن الثاني',inputs:[{id:'nwM',label:'الكتلة m',unit:'kg',val:10},{id:'nwA',label:'التسارع a',unit:'m/s²',val:9.8}],outputs:[{id:'outNwF',label:'القوة F'},{id:'outNwW',label:'الوزن W'}]},
+{id:'en',icon:'E',title:'الطاقة الميكانيكية',inputs:[{id:'enM',label:'الكتلة m',unit:'kg',val:2},{id:'enV',label:'السرعة v',unit:'m/s',val:10},{id:'enH',label:'الارتفاع h',unit:'m',val:5}],outputs:[{id:'outEnKE',label:'الحركية KE'},{id:'outEnPE',label:'الكامنة PE'},{id:'outEnTot',label:'الكلية',acc:1}]},
+{id:'gr',icon:'G',title:'الجاذبية العامة',inputs:[{id:'grM1',label:'m₁',unit:'kg',val:5.972e24},{id:'grM2',label:'m₂',unit:'kg',val:70},{id:'grR',label:'r',unit:'m',val:6.371e6}],outputs:[{id:'outGrF',label:'القوة F'},{id:'outGrA',label:'التسارع'}]},
+{id:'me',icon:'c²',title:'تكافؤ الكتلة والطاقة',inputs:[{id:'meMass',label:'الكتلة m',unit:'kg',val:1}],outputs:[{id:'outMeJ',label:'E (J)'},{id:'outMeEv',label:'E (MeV)'},{id:'outMeTnt',label:'مكافئ TNT'}]},
+{id:'lens',icon:'1/f',title:'العدسة الرقيقة',inputs:[{id:'lensF',label:'البعد البؤري f',unit:'cm',val:10},{id:'lensD',label:'بعد الجسم d₀',unit:'cm',val:30}],outputs:[{id:'outLensDi',label:'بعد الصورة'},{id:'outLensMag',label:'التكبير M'},{id:'outLensType',label:'النوع'}]},
+{id:'orb',icon:'T',title:'المدارات',inputs:[{id:'orbM',label:'الكتلة المركزية',unit:'kg',val:5.972e24},{id:'orbR',label:'نصف القطر',unit:'m',val:6.771e6}],outputs:[{id:'outOrbV',label:'السرعة المدارية'},{id:'outOrbEsc',label:'سرعة الإفلات'},{id:'outOrbT',label:'الفترة'}]},
+{id:'kin',icon:'u',title:'الحركة بتسارع ثابت',inputs:[{id:'kinU',label:'u',unit:'m/s',val:0},{id:'kinA',label:'a',unit:'m/s²',val:2},{id:'kinT',label:'t',unit:'s',val:5}],outputs:[{id:'outKinV',label:'السرعة النهائية'},{id:'outKinS',label:'الإزاحة'}]},
+{id:'dp',icon:'ρ',title:'الكثافة والضغط',inputs:[{id:'dpM',label:'الكتلة',unit:'kg',val:1},{id:'dpV',label:'الحجم',unit:'m³',val:.001},{id:'dpF',label:'القوة',unit:'N',val:100},{id:'dpA',label:'المساحة',unit:'m²',val:.01}],outputs:[{id:'outDensity',label:'الكثافة'},{id:'outPressure',label:'الضغط'}]}
+];
+function buildPhysics(){
+const grid=$('pgrid');
+grid.innerHTML=solvers.map(s=>`<article class="scard card"><div class="shead"><div class="sicon">${s.icon}</div><h3>${s.title}</h3></div><div class="sinputs">${s.inputs.map(i=>`<label class="mfield"><span>${i.label}</span><span class="iunit"><input type="number" id="${i.id}" value="${i.val}" step="any" dir="ltr"><b>${i.unit}</b></span></label>`).join('')}</div><div class="sres">${s.outputs.map(o=>`<div class="sr${o.acc?' acc':''}"><span>${o.label}</span><b id="${o.id}">—</b></div>`).join('')}</div></article>`).join('');
+grid.querySelectorAll('input').forEach(i=>i.addEventListener('input',runAll));
+runAll();}
+function runAll(){
+// مقذوفات
+try{const v=n('pjV0'),a=n('pjAngle')*Math.PI/180;const vx=v*Math.cos(a),vy=v*Math.sin(a);const T=2*vy/g,R=vx*T,H=vy*vy/(2*g);
+$('outPjR').textContent=f(R)+' m';$('outPjH').textContent=f(H)+' m';$('outPjT').textContent=f(T)+' s';$('outPjVx').textContent=f(vx)+' m/s';}catch{}
+try{const m=n('nwM'),a=n('nwA');$('outNwF').textContent=f(m*a)+' N';$('outNwW').textContent=f(m*g)+' N';}catch{}
+try{const m=n('enM'),v=n('enV'),h=n('enH');const KE=.5*m*v*v,PE=m*g*h;$('outEnKE').textContent=f(KE)+' J';$('outEnPE').textContent=f(PE)+' J';$('outEnTot').textContent=f(KE+PE)+' J';}catch{}
+try{const m1=n('grM1'),m2=n('grM2'),r=n('grR');if(r){const F=G*m1*m2/(r*r);$('outGrF').textContent=f(F)+' N';$('outGrA').textContent=f(F/m2)+' m/s²';}}catch{}
+try{const m=n('meMass');const E=m*C*C;$('outMeJ').textContent=f(E)+' J';$('outMeEv').textContent=f(E/1.602e-13)+' MeV';$('outMeTnt').textContent=f(E/4.184e9)+' طن';}catch{}
+try{const f=n('lensF'),d=n('lensD');const den=d-f;if(Math.abs(den)<1e-9){$('outLensDi').textContent='∞';$('outLensMag').textContent='—';$('outLensType').textContent='—';}else{const di=(f*d)/den,M=-di/d;$('outLensDi').textContent=f(di)+' cm';$('outLensMag').textContent=f(M);$('outLensType').textContent=di>0?'حقيقية':'خيالية';}}catch{}
+try{const M=n('orbM'),r=n('orbR');if(r){const v=Math.sqrt(G*M/r),esc=Math.sqrt(2*G*M/r),T=2*Math.PI*Math.sqrt(r**3/(G*M));$('outOrbV').textContent=f(v)+' m/s';$('outOrbEsc').textContent=f(esc)+' m/s';$('outOrbT').textContent=f(T/60)+' min';}}catch{}
+try{const u=n('kinU'),a=n('kinA'),t=n('kinT');$('outKinV').textContent=f(u+a*t)+' m/s';$('outKinS').textContent=f(u*t+.5*a*t*t)+' m';}catch{}
+try{const m=n('dpM'),V=n('dpV'),F=n('dpF'),A=n('dpA');$('outDensity').textContent=V?f(m/V)+' kg/m³':'—';$('outPressure').textContent=A?f(F/A)+' Pa':'—';}catch{}
+}
+buildPhysics();
+})();
+
+/* ============ الأدوات المتقدمة ============ */
+(function(){
+const P=window.OujParser;const $=id=>document.getElementById(id);
+function f(x){return Number.isFinite(x)?P.formatNumber(x):'—';}
+document.querySelectorAll('.ttab').forEach(t=>t.addEventListener('click',()=>{
+document.querySelectorAll('.ttab').forEach(x=>x.classList.toggle('active',x===t));
+document.querySelectorAll('.tpanel').forEach(p=>{const on=p.dataset.panel===t.dataset.tool;p.classList.toggle('active',on);p.hidden=!on;});}));
+// تفاضل
+function calcCalculus(){const e=$('calcF').value.trim(),a=parseFloat($('calcA').value),b=parseFloat($('calcB').value);const note=$('calcNote');note.classList.remove('error');note.textContent='';if(!e)return;
+try{const fa=P.evaluate(e,{x:a});$('outFA').textContent=f(fa);
+const h=1e-5;const d=(P.evaluate(e,{x:a+h})-P.evaluate(e,{x:a-h}))/(2*h);$('outDeriv').textContent=f(d);
+if(Number.isFinite(a)&&Number.isFinite(b)){const N=2000,hh=(b-a)/N;let sum=0;
+for(let i=0;i<=N;i++){const x=a+i*hh;const y=P.evaluate(e,{x});if(!Number.isFinite(y))throw new Error('قيمة غير معرّفة');const w=i===0||i===N?1:(i%2?4:2);sum+=w*y;}
+$('outIntegral').textContent=f(hh/3*sum);}else $('outIntegral').textContent='—';
+}catch(err){note.textContent='خطأ: '+err.message;note.classList.add('error');}}
+['calcF','calcA','calcB'].forEach(id=>$(id).addEventListener('input',calcCalculus));calcCalculus();
+// معادلات
+function solveEq(){const e=$('eqF').value.trim(),x0=parseFloat($('eqX0').value);const note=$('eqNote');note.classList.remove('error','success');note.textContent='';if(!e)return;
+const F=x=>P.evaluate(e,{x});const dF=x=>{const h=1e-6;return(F(x+h)-F(x-h))/(2*h);};
+try{let x=x0,ok=false;for(let i=0;i<100;i++){const fx=F(x),dx=dF(x);if(!Number.isFinite(fx)||!Number.isFinite(dx)||Math.abs(dx)<1e-12)break;const nx=x-fx/dx;if(!Number.isFinite(nx))break;if(Math.abs(nx-x)<1e-10){x=nx;ok=true;break;}x=nx;}
+if(ok&&Math.abs(F(x))<1e-6){$('outEqRoot').textContent=f(x);$('outEqVal').textContent=f(F(x));note.textContent='تم إيجاد الجذر (نيوتن).';note.classList.add('success');}
+else{let found=null;const N=400;let pX=-20,pY=F(pX);
+for(let i=1;i<=N;i++){const cX=-20+40*i/N,cY=F(cX);
+if(Number.isFinite(pY)&&Number.isFinite(cY)&&pY*cY<=0){let lo=pX,hi=cX;for(let j=0;j<80;j++){const mid=(lo+hi)/2;if(F(lo)*F(mid)<=0)hi=mid;else lo=mid;}found=(lo+hi)/2;break;}
+pX=cX;pY=cY;}
+if(found!==null){$('outEqRoot').textContent=f(found);$('outEqVal').textContent=f(F(found));note.textContent='تم إيجاد جذر بالبحث.';note.classList.add('success');}
+else{$('outEqRoot').textContent='—';$('outEqVal').textContent='—';note.textContent='لم يُعثر على جذر.';note.classList.add('error');}}
+}catch(err){note.textContent='خطأ: '+err.message;note.classList.add('error');}}
+$('eqSolve').addEventListener('click',solveEq);
+['eqF','eqX0'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')solveEq();}));
+// إحصاء
+function calcStats(){const raw=$('statsIn').value;const nums=raw.split(/[\s,;]+/).map(s=>parseFloat(s)).filter(Number.isFinite);const n=nums.length;
+$('sN').textContent=n;if(!n){['sSum','sMean','sMed','sMode','sVar','sStd','sMin','sMax','sRange'].forEach(id=>$(id).textContent='—');return;}
+const sum=nums.reduce((a,b)=>a+b,0),mean=sum/n;
+$('sSum').textContent=f(sum);$('sMean').textContent=f(mean);
+const sorted=[...nums].sort((a,b)=>a-b);
+const med=n%2?sorted[(n-1)/2]:(sorted[n/2-1]+sorted[n/2])/2;$('sMed').textContent=f(med);
+const cnt=new Map();let mx=0;for(const v of nums){const c=(cnt.get(v)||0)+1;cnt.set(v,c);if(c>mx)mx=c;}
+const modes=[...cnt.entries()].filter(([,c])=>c===mx).map(([v])=>v);
+$('sMode').textContent=mx===1?'لا يوجد':modes.map(f).join('، ');
+const vs=n>1?nums.reduce((a,b)=>a+(b-mean)**2,0)/(n-1):0;
+$('sVar').textContent=n>1?f(vs):'—';$('sStd').textContent=n>1?f(Math.sqrt(vs)):'—';
+$('sMin').textContent=f(sorted[0]);$('sMax').textContent=f(sorted[n-1]);$('sRange').textContent=f(sorted[n-1]-sorted[0]);}
+$('statsIn').addEventListener('input',calcStats);calcStats();
+// معقدة
+function cFmt(a,b){const re=f(a),im=f(Math.abs(b));if(Math.abs(b)<1e-12)return re;if(Math.abs(a)<1e-12)return(b<0?'−':'')+im+'i';return`${re} ${b<0?'−':'+'} ${im}i`;}
+function calcCx(){const a=parseFloat($('cxA').value)||0,b=parseFloat($('cxB').value)||0,c=parseFloat($('cxC').value)||0,d=parseFloat($('cxD').value)||0;
+$('cxSum').textContent=cFmt(a+c,b+d);$('cxDiff').textContent=cFmt(a-c,b-d);
+$('cxProd').textContent=cFmt(a*c-b*d,a*d+b*c);
+const den=c*c+d*d;if(den!==0)$('cxQuot').textContent=cFmt((a*c+b*d)/den,(b*c-a*d)/den);else $('cxQuot').textContent='غير معرّف';
+const mod=Math.sqrt(a*a+b*b);$('cxMod').textContent=f(mod);
+const arg=Math.atan2(b,a);$('cxArg').textContent=f(arg)+' rad';
+$('cxConj').textContent=cFmt(a,-b);$('cxPolar').textContent=`${f(mod)} ∠ ${f(arg*180/Math.PI)}°`;}
+['cxA','cxB','cxC','cxD'].forEach(id=>$(id).addEventListener('input',calcCx));calcCx();
+// أنظمة عد
+function calcBases(){const inp=$('baseIn').value.trim(),from=parseInt($('baseFrom').value);const note=$('baseNote');note.classList.remove('error');note.textContent='';
+if(!inp){['baseDec','baseBin','baseOct','baseHex'].forEach(id=>$(id).textContent='—');return;}
+try{const vr={10:/^[0-9]+$/,2:/^[01]+$/,8:/^[0-7]+$/,16:/^[0-9a-fA-F]+$/};
+if(!vr[from].test(inp))throw new Error('الرقم لا يطابق النظام');
+const dec=BigInt(parseInt(inp,from));
+$('baseDec').textContent=dec.toString(10);$('baseBin').textContent=dec.toString(2);
+$('baseOct').textContent=dec.toString(8);$('baseHex').textContent=dec.toString(16).toUpperCase();
+}catch(err){['baseDec','baseBin','baseOct','baseHex'].forEach(id=>$(id).textContent='—');note.textContent='خطأ: '+err.message;note.classList.add('error');}}
+$('baseIn').addEventListener('input',calcBases);$('baseFrom').addEventListener('change',calcBases);calcBases();
+// مصفوفات
+function buildM(n){const g=$('mGrid');g.style.setProperty('--n',n);g.innerHTML='';
+for(let i=0;i<n*n;i++){const inp=document.createElement('input');inp.type='number';inp.step='any';inp.dir='ltr';inp.value=i%(n+1)===0?(i===0?2:1):0;inp.dataset.i=i;g.appendChild(inp);}}
+function readM(){const n=parseInt($('mSize').value);const ins=$('mGrid').querySelectorAll('input');const m=[];
+for(let i=0;i<n;i++){const r=[];for(let j=0;j<n;j++)r.push(parseFloat(ins[i*n+j].value)||0);m.push(r);}return m;}
+function det(m){const n=m.length;if(n===1)return m[0][0];if(n===2)return m[0][0]*m[1][1]-m[0][1]*m[1][0];
+let s=0;for(let j=0;j<n;j++){const sub=m.slice(1).map(r=>r.filter((_,k)=>k!==j));s+=((j%2)?-1:1)*m[0][j]*det(sub);}return s;}
+function inv(m){const n=m.length,D=det(m);if(Math.abs(D)<1e-12)return null;
+if(n===2)return[[m[1][1]/D,-m[0][1]/D],[-m[1][0]/D,m[0][0]/D]];
+const aug=m.map((r,i)=>[...r,...Array.from({length:n},(_,j)=>i===j?1:0)]);
+for(let i=0;i<n;i++){let p=i;for(let k=i+1;k<n;k++)if(Math.abs(aug[k][i])>Math.abs(aug[p][i]))p=k;[aug[i],aug[p]]=[aug[p],aug[i]];const pv=aug[i][i];if(Math.abs(pv)<1e-12)return null;for(let j=0;j<2*n;j++)aug[i][j]/=pv;for(let k=0;k<n;k++){if(k===i)continue;const fc=aug[k][i];for(let j=0;j<2*n;j++)aug[k][j]-=fc*aug[i][j];}}
+return aug.map(r=>r.slice(n));}
+function trans(m){const n=m.length;return m[0].map((_,j)=>m.map(r=>r[j]));}
+function rM(m){const n=m.length;return`<div class="mrender" style="--n:${n}">${m.flat().map(v=>`<span>${f(v)}</span>`).join('')}</div>`;}
+function calcM(){const m=readM();$('mDet').textContent=f(det(m));
+const iv=inv(m);$('mInv').innerHTML=iv?rM(iv):'<span style="color:var(--danger);font-size:.85rem">مصفوفة شاذة</span>';
+$('mTrans').innerHTML=rM(trans(m));}
+$('mSize').addEventListener('change',()=>{buildM(parseInt($('mSize').value));calcM();});
+$('mCalc').addEventListener('click',calcM);buildM(2);calcM();
+})();
+</script>
+</body>
+</html>
